@@ -516,7 +516,21 @@ where launched is null
 );
 
 76
-
+select shipname,launched,batname
+from
+(select s.name as shipname,launched,b.name as batname,
+row_number() over (partition by s.name order by "date") as num
+from ships s,battles b
+where to_char("date",'yyyy')>=launched
+and launched is not null)
+where num = 1
+union
+(
+select name,launched,(select name from battles
+where "date" = (select max("date") from battles)) as batname
+from ships
+where launched is null
+)
 
 77
 SELECT TOP 1 WITH TIES * FROM (
